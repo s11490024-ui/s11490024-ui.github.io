@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAISON LUMIÈRE — 精品服飾</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #f7f3ee;
+      --warm:    #ede7dc;
+      --sand:    #c9b99a;
+      --bronze:  #9c7a52;
+      --espresso:#3a2c1e;
+      --ink:     #1a1410;
+      --white:   #ffffff;
+      --ff-serif: 'Cormorant Garamond', Georgia, serif;
+      --ff-sans:  'Jost', sans-serif;
+      --nav-h:    70px;
+      --ease:     cubic-bezier(.4,0,.2,1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--ff-sans);
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: rgba(247,243,238,.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(156,122,82,.18);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.2rem, 5vw, 4rem);
+      z-index: 1000;
+    }
+
+    .nav-brand {
+      font-family: var(--ff-serif);
+      font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+      font-weight: 400;
+      letter-spacing: .28em;
+      color: var(--espresso);
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .nav-brand span { color: var(--bronze); }
+
+    .nav-links {
+      display: flex;
+      gap: clamp(.8rem, 3vw, 2.4rem);
+      list-style: none;
+    }
+
+    .nav-links li button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--ff-sans);
+      font-size: .72rem;
+      font-weight: 300;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--espresso);
+      padding: .35rem 0;
+      position: relative;
+      transition: color .25s var(--ease);
+    }
+
+    .nav-links li button::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 1px;
+      background: var(--bronze);
+      transition: width .35s var(--ease);
+    }
+
+    .nav-links li button:hover,
+    .nav-links li button.active { color: var(--bronze); }
+    .nav-links li button.active::after,
+    .nav-links li button:hover::after { width: 100%; }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: .4rem;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 1px;
+      background: var(--espresso);
+      transition: transform .3s var(--ease), opacity .3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* Mobile menu */
+    .mobile-menu {
+      position: fixed;
+      top: var(--nav-h); left: 0; right: 0;
+      background: rgba(247,243,238,.97);
+      backdrop-filter: blur(20px);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+      z-index: 999;
+      border-bottom: 1px solid rgba(156,122,82,.18);
+      transform: translateY(-20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .35s var(--ease), opacity .35s var(--ease);
+    }
+    .mobile-menu.show { transform: translateY(0); opacity: 1; pointer-events: all; }
+
+    .mobile-menu button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--ff-sans);
+      font-size: .85rem;
+      font-weight: 300;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--espresso);
+      text-align: left;
+      padding: .5rem 0;
+      border-bottom: 1px solid rgba(156,122,82,.15);
+    }
+
+    /* ── PAGE WRAPPER ── */
+    main {
+      padding-top: var(--nav-h);
+      min-height: 100vh;
+    }
+
+    /* ── PAGE TRANSITIONS ── */
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity .45s var(--ease), transform .45s var(--ease);
+    }
+    .fade-enter-from { opacity: 0; transform: translateY(18px); }
+    .fade-leave-to   { opacity: 0; transform: translateY(-10px); }
+
+    /* ══════════════════════════════
+       HOME PAGE
+    ══════════════════════════════ */
+    .hero {
+      position: relative;
+      height: calc(100vh - var(--nav-h));
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-img {
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1600&q=80') center/cover no-repeat;
+      transform: scale(1.04);
+      animation: kenBurns 14s ease-in-out infinite alternate;
+      filter: brightness(.65) sepia(.15);
+    }
+
+    @keyframes kenBurns {
+      from { transform: scale(1.04) translate(0,0); }
+      to   { transform: scale(1.1)  translate(-1%,-.5%); }
+    }
+
+    .hero-content {
+      position: relative;
+      text-align: center;
+      color: var(--white);
+      padding: 0 1.5rem;
+      animation: heroIn 1.2s var(--ease) both;
+    }
+
+    @keyframes heroIn {
+      from { opacity:0; transform: translateY(32px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .hero-eyebrow {
+      font-family: var(--ff-sans);
+      font-size: .65rem;
+      font-weight: 300;
+      letter-spacing: .45em;
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+      color: rgba(255,255,255,.72);
+    }
+
+    .hero-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(3rem, 9vw, 7.5rem);
+      font-weight: 300;
+      line-height: 1.02;
+      letter-spacing: .04em;
+      margin-bottom: .5rem;
+    }
+    .hero-title em { font-style: italic; color: #e2c9aa; }
+
+    .hero-subtitle {
+      font-family: var(--ff-serif);
+      font-style: italic;
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+      font-weight: 300;
+      color: rgba(255,255,255,.8);
+      margin-bottom: 2.8rem;
+      letter-spacing: .08em;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 1rem 3rem;
+      border: 1px solid rgba(255,255,255,.7);
+      color: var(--white);
+      font-family: var(--ff-sans);
+      font-size: .72rem;
+      font-weight: 300;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: transparent;
+      transition: background .3s, border-color .3s, color .3s;
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      background: var(--white);
+      border-color: var(--white);
+      color: var(--espresso);
+    }
+
+    /* Scroll hint */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      color: rgba(255,255,255,.5);
+      font-size: .6rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      animation: scrollBounce 2s ease-in-out infinite;
+    }
+    .scroll-hint::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 36px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.5), transparent);
+    }
+    @keyframes scrollBounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* Features strip */
+    .features-strip {
+      background: var(--espresso);
+      color: var(--cream);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+    }
+
+    .feature-item {
+      padding: 2.8rem 1.5rem;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .feature-item:last-child { border-right: none; }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: .9rem;
+      display: block;
+    }
+    .feature-label {
+      font-family: var(--ff-sans);
+      font-size: .65rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--sand);
+      display: block;
+      margin-bottom: .4rem;
+    }
+    .feature-desc {
+      font-family: var(--ff-serif);
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--cream);
+    }
+
+    /* Home collection preview */
+    .section { padding: clamp(4rem, 10vw, 8rem) clamp(1.2rem, 8vw, 7rem); }
+
+    .section-label {
+      font-family: var(--ff-sans);
+      font-size: .62rem;
+      font-weight: 300;
+      letter-spacing: .42em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--espresso);
+      margin-bottom: 1rem;
+    }
+    .section-title em { font-style: italic; }
+
+    .divider {
+      width: 48px; height: 1px;
+      background: var(--bronze);
+      margin: 1.6rem 0 2.4rem;
+    }
+
+    .section-body {
+      font-size: .9rem;
+      font-weight: 300;
+      line-height: 1.9;
+      color: #5a4a3a;
+      max-width: 580px;
+    }
+
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .home-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .home-card-img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      display: block;
+      transition: transform .7s var(--ease);
+      filter: sepia(.08);
+    }
+    .home-card:hover .home-card-img { transform: scale(1.06); }
+
+    .home-card-info {
+      padding: 1.2rem .2rem;
+    }
+    .home-card-cat {
+      font-size: .62rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: .5rem;
+    }
+    .home-card-name {
+      font-family: var(--ff-serif);
+      font-size: 1.2rem;
+      font-weight: 300;
+      color: var(--espresso);
+    }
+
+    /* ══════════════════════════════
+       PRODUCTS PAGE
+    ══════════════════════════════ */
+    .page-header {
+      background: var(--espresso);
+      color: var(--cream);
+      text-align: center;
+      padding: clamp(4rem, 10vw, 7rem) 2rem;
+    }
+
+    .page-header .section-label { color: var(--sand); }
+
+    .page-header h1 {
+      font-family: var(--ff-serif);
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 300;
+      letter-spacing: .06em;
+      color: var(--cream);
+    }
+    .page-header h1 em { font-style: italic; color: #e2c9aa; }
+
+    /* Filter tabs */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      justify-content: center;
+      padding: 2.5rem 1rem 1rem;
+    }
+
+    .filter-btn {
+      background: none;
+      border: 1px solid rgba(156,122,82,.4);
+      color: var(--espresso);
+      font-family: var(--ff-sans);
+      font-size: .65rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      padding: .55rem 1.4rem;
+      cursor: pointer;
+      transition: all .25s var(--ease);
+    }
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--espresso);
+      border-color: var(--espresso);
+      color: var(--cream);
+    }
+
+    /* Products grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2.4rem 2rem;
+      padding: 3rem clamp(1.2rem, 7vw, 6rem) 6rem;
+    }
+
+    .product-card {
+      background: var(--white);
+      overflow: hidden;
+      transition: box-shadow .35s var(--ease), transform .35s var(--ease);
+    }
+    .product-card:hover {
+      box-shadow: 0 16px 48px rgba(58,44,30,.12);
+      transform: translateY(-4px);
+    }
+
+    .product-img-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      display: block;
+      transition: transform .65s var(--ease);
+      filter: sepia(.06);
+    }
+    .product-card:hover .product-img { transform: scale(1.05); }
+
+    .product-tag {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      background: var(--espresso);
+      color: var(--cream);
+      font-size: .58rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: .3rem .8rem;
+    }
+
+    .product-info {
+      padding: 1.4rem 1.2rem 1.6rem;
+    }
+    .product-cat {
+      font-size: .6rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: .5rem;
+    }
+    .product-name {
+      font-family: var(--ff-serif);
+      font-size: 1.25rem;
+      font-weight: 400;
+      color: var(--espresso);
+      margin-bottom: .5rem;
+    }
+    .product-desc {
+      font-size: .8rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: #6b5a48;
+      margin-bottom: 1.2rem;
+    }
+    .product-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .product-price {
+      font-family: var(--ff-serif);
+      font-size: 1.2rem;
+      color: var(--espresso);
+    }
+
+    .btn-sm {
+      background: var(--espresso);
+      color: var(--cream);
+      border: none;
+      font-family: var(--ff-sans);
+      font-size: .6rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: .65rem 1.2rem;
+      cursor: pointer;
+      transition: background .25s;
+    }
+    .btn-sm:hover { background: var(--bronze); }
+
+    /* ══════════════════════════════
+       MATERIALS PAGE
+    ══════════════════════════════ */
+    .materials-intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      min-height: 480px;
+    }
+
+    .materials-intro-img {
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+      object-fit: cover;
+      display: block;
+      filter: sepia(.12);
+    }
+
+    .materials-intro-text {
+      background: var(--espresso);
+      color: var(--cream);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(2.5rem, 6vw, 5rem);
+    }
+    .materials-intro-text .section-label { color: var(--sand); }
+    .materials-intro-text .section-title { color: var(--cream); }
+    .materials-intro-text .section-title em { color: #e2c9aa; }
+    .materials-intro-text .divider { background: var(--sand); }
+    .materials-intro-text .section-body { color: rgba(247,243,238,.72); max-width: 100%; }
+
+    /* Material cards */
+    .mat-section { padding: clamp(3rem, 8vw, 6rem) clamp(1.2rem, 7vw, 6rem); }
+
+    .mat-section-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      font-weight: 300;
+      color: var(--espresso);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+    .mat-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(156,122,82,.3);
+    }
+
+    .mat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .mat-card {
+      background: var(--white);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      border-bottom: 3px solid transparent;
+      transition: border-color .3s, transform .3s, box-shadow .3s;
+    }
+    .mat-card:hover {
+      border-color: var(--bronze);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(58,44,30,.09);
+    }
+
+    .mat-icon { font-size: 2.4rem; margin-bottom: 1rem; display: block; }
+    .mat-name {
+      font-family: var(--ff-serif);
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--espresso);
+      margin-bottom: .5rem;
+    }
+    .mat-desc {
+      font-size: .78rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: #6b5a48;
+    }
+
+    /* Style effects */
+    .style-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .style-card {
+      background: var(--warm);
+      padding: 2.2rem 1.8rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform .3s, box-shadow .3s;
+    }
+    .style-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(58,44,30,.1);
+    }
+    .style-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--bronze);
+    }
+
+    .style-num {
+      font-family: var(--ff-serif);
+      font-size: 3.5rem;
+      font-weight: 300;
+      color: rgba(156,122,82,.2);
+      line-height: 1;
+      margin-bottom: .5rem;
+    }
+    .style-name {
+      font-family: var(--ff-serif);
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: var(--espresso);
+      margin-bottom: .6rem;
+    }
+    .style-desc {
+      font-size: .8rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: #6b5a48;
+    }
+    .style-tag {
+      display: inline-block;
+      margin-top: 1rem;
+      font-size: .6rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      border: 1px solid rgba(156,122,82,.4);
+      padding: .25rem .7rem;
+    }
+
+    /* ══════════════════════════════
+       CONTACT PAGE
+    ══════════════════════════════ */
+    .contact-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - var(--nav-h));
+    }
+
+    .contact-info {
+      background: var(--espresso);
+      color: var(--cream);
+      padding: clamp(3rem, 8vw, 6rem) clamp(2rem, 6vw, 5rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .contact-info .section-label { color: var(--sand); }
+    .contact-info h2 {
+      font-family: var(--ff-serif);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 300;
+      color: var(--cream);
+      margin-bottom: .5rem;
+    }
+    .contact-info h2 em { font-style: italic; color: #e2c9aa; }
+    .contact-info .divider { background: var(--sand); }
+    .contact-info p {
+      font-size: .88rem;
+      font-weight: 300;
+      line-height: 1.85;
+      color: rgba(247,243,238,.72);
+      margin-bottom: 2.5rem;
+    }
+
+    .info-list { list-style: none; display: flex; flex-direction: column; gap: 1.4rem; }
+
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .info-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: .1rem;
+    }
+    .info-label {
+      font-size: .6rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--sand);
+      display: block;
+      margin-bottom: .25rem;
+    }
+    .info-value {
+      font-size: .88rem;
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1.6;
+    }
+
+    /* Form side */
+    .contact-form-wrap {
+      background: var(--cream);
+      padding: clamp(3rem, 8vw, 6rem) clamp(2rem, 6vw, 5rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-title {
+      font-family: var(--ff-serif);
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      font-weight: 300;
+      color: var(--espresso);
+      margin-bottom: .3rem;
+    }
+    .form-sub {
+      font-size: .8rem;
+      font-weight: 300;
+      color: #7a6552;
+      margin-bottom: 2.5rem;
+    }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label {
+      display: block;
+      font-size: .62rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: .55rem;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--white);
+      border: 1px solid rgba(156,122,82,.3);
+      border-radius: 0;
+      padding: .9rem 1rem;
+      font-family: var(--ff-sans);
+      font-size: .875rem;
+      font-weight: 300;
+      color: var(--espresso);
+      outline: none;
+      transition: border-color .25s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--bronze); }
+    .form-group textarea { resize: vertical; min-height: 110px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--espresso);
+      color: var(--cream);
+      border: none;
+      font-family: var(--ff-sans);
+      font-size: .7rem;
+      font-weight: 300;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      padding: 1.1rem 2rem;
+      cursor: pointer;
+      transition: background .3s, letter-spacing .3s;
+      margin-top: .5rem;
+    }
+    .btn-submit:hover { background: var(--bronze); letter-spacing: .4em; }
+
+    /* Success message */
+    .success-msg {
+      background: rgba(156,122,82,.12);
+      border: 1px solid rgba(156,122,82,.4);
+      color: var(--bronze);
+      padding: 1rem 1.4rem;
+      font-size: .82rem;
+      font-weight: 300;
+      letter-spacing: .05em;
+      margin-top: 1rem;
+      display: none;
+    }
+    .success-msg.show { display: block; animation: fadeIn .4s ease; }
+    @keyframes fadeIn { from {opacity:0; transform:translateY(6px);} to {opacity:1;transform:translateY(0);} }
+
+    /* Map placeholder */
+    .map-placeholder {
+      background: var(--warm);
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--ff-serif);
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--sand);
+      letter-spacing: .1em;
+      position: relative;
+      overflow: hidden;
+      margin-top: 2rem;
+    }
+    .map-placeholder::before {
+      content: '📍';
+      font-size: 2rem;
+      margin-right: .6rem;
+    }
+
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
+    footer {
+      background: var(--ink);
+      color: rgba(247,243,238,.55);
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    footer .footer-brand {
+      font-family: var(--ff-serif);
+      font-size: 1.3rem;
+      font-weight: 300;
+      letter-spacing: .3em;
+      color: var(--cream);
+      text-transform: uppercase;
+      margin-bottom: .8rem;
+    }
+    footer p {
+      font-size: .7rem;
+      letter-spacing: .15em;
+      line-height: 1.9;
+    }
+    footer a { color: var(--sand); text-decoration: none; }
+
+    /* ══════════════════════════════
+       RESERVATION MODAL
+    ══════════════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,20,16,.7);
+      backdrop-filter: blur(6px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn .3s ease;
+    }
+    .modal-box {
+      background: var(--cream);
+      max-width: 480px;
+      width: 100%;
+      padding: clamp(2rem, 5vw, 3.5rem);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.2rem; right: 1.2rem;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--espresso);
+      opacity: .6;
+      transition: opacity .2s;
+    }
+    .modal-close:hover { opacity: 1; }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 900px) {
+      .home-grid { grid-template-columns: repeat(2, 1fr); }
+      .features-strip { grid-template-columns: 1fr; }
+      .feature-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .feature-item:last-child { border-bottom: none; }
+      .materials-intro { grid-template-columns: 1fr; }
+      .materials-intro-img { min-height: 280px; max-height: 320px; }
+      .contact-wrap { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .home-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .mat-grid { grid-template-columns: repeat(2, 1fr); }
+      .style-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- NAVBAR -->
+  <nav>
+    <a class="nav-brand" @click="goPage('home')" href="#">
+      MAISON <span>LUMIÈRE</span>
+    </a>
+    <ul class="nav-links">
+      <li v-for="item in navItems" :key="item.id">
+        <button :class="{ active: currentPage === item.id }" @click="goPage(item.id)">
+          {{ item.label }}
+        </button>
+      </li>
+    </ul>
+    <button class="hamburger" :class="{ open: menuOpen }" @click="menuOpen=!menuOpen"
+      aria-label="選單">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" :class="{ show: menuOpen }">
+    <button v-for="item in navItems" :key="item.id"
+      @click="goPage(item.id); menuOpen=false">
+      {{ item.label }}
+    </button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <transition name="fade" mode="out-in">
+
+      <!-- ████ HOME ████ -->
+      <div v-if="currentPage==='home'" key="home">
+        <!-- Hero -->
+        <section class="hero">
+          <div class="hero-img"></div>
+          <div class="hero-content">
+            <p class="hero-eyebrow">2025 Autumn / Winter Collection</p>
+            <h1 class="hero-title">MAISON<br><em>Lumière</em></h1>
+            <p class="hero-subtitle">時光之光，於布料間流動</p>
+            <button class="btn-primary" @click="showModal=true">預約私人鑑賞</button>
+          </div>
+          <div class="scroll-hint">Scroll</div>
+        </section>
+
+        <!-- Features strip -->
+        <div class="features-strip">
+          <div class="feature-item">
+            <span class="feature-icon">🌿</span>
+            <span class="feature-label">永續承諾</span>
+            <span class="feature-desc">天然纖維，道德採購</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">✂️</span>
+            <span class="feature-label">手工訂製</span>
+            <span class="feature-desc">每件作品獨一無二</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🚚</span>
+            <span class="feature-label">全台配送</span>
+            <span class="feature-desc">包裝精緻，安心到府</span>
+          </div>
+        </div>
+
+        <!-- Collection preview -->
+        <section class="section">
+          <p class="section-label">New Arrivals</p>
+          <h2 class="section-title">本季<em>精選</em>系列</h2>
+          <div class="divider"></div>
+          <p class="section-body">
+            每一件 MAISON LUMIÈRE 作品，皆是對傳統工藝與當代美學的致敬。
+            我們精選全球最優質的天然纖維，結合台灣職人的精湛手藝，
+            為您打造超越時間的衣櫥經典。
+          </p>
+
+          <div class="home-grid">
+            <div class="home-card" v-for="p in featuredProducts" :key="p.id"
+              @click="goPage('products')">
+              <img class="home-card-img" :src="p.img" :alt="p.name" loading="lazy" />
+              <div class="home-card-info">
+                <p class="home-card-cat">{{ p.cat }}</p>
+                <p class="home-card-name">{{ p.name }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA banner -->
+        <section style="background:var(--warm);padding:5rem clamp(1.5rem,8vw,6rem);display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;">
+          <div>
+            <p class="section-label">Private Appointment</p>
+            <h3 style="font-family:var(--ff-serif);font-size:clamp(1.5rem,4vw,2.8rem);font-weight:300;color:var(--espresso);">
+              預約您的<em style="font-style:italic;color:var(--bronze);">專屬</em>時尚諮詢
+            </h3>
+          </div>
+          <button class="btn-sm" style="padding:1rem 2rem;font-size:.7rem;" @click="showModal=true">立即預約</button>
+        </section>
+
+        <footer>
+          <div class="footer-brand">MAISON LUMIÈRE</div>
+          <p>台南市東區府前路一段333號 &nbsp;|&nbsp; <a href="tel:+886623456789">(06) 234-5678</a><br>
+          © 2025 Maison Lumière. All rights reserved.</p>
+        </footer>
+      </div>
+
+      <!-- ████ PRODUCTS ████ -->
+      <div v-else-if="currentPage==='products'" key="products">
+        <div class="page-header">
+          <p class="section-label">Collection 2025</p>
+          <h1>物品<em>介紹</em></h1>
+        </div>
+
+        <!-- Filter -->
+        <div class="filter-bar">
+          <button class="filter-btn"
+            v-for="f in filters" :key="f"
+            :class="{ active: activeFilter===f }"
+            @click="activeFilter=f">{{ f }}</button>
+        </div>
+
+        <!-- Grid -->
+        <div class="products-grid">
+          <div class="product-card"
+            v-for="p in filteredProducts" :key="p.id">
+            <div class="product-img-wrap">
+              <img class="product-img" :src="p.img" :alt="p.name" loading="lazy" />
+              <span class="product-tag" v-if="p.tag">{{ p.tag }}</span>
+            </div>
+            <div class="product-info">
+              <p class="product-cat">{{ p.cat }}</p>
+              <h3 class="product-name">{{ p.name }}</h3>
+              <p class="product-desc">{{ p.desc }}</p>
+              <div class="product-footer">
+                <span class="product-price">NT$ {{ p.price.toLocaleString() }}</span>
+                <button class="btn-sm" @click="showModal=true">預約試穿</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer>
+          <div class="footer-brand">MAISON LUMIÈRE</div>
+          <p>台南市東區府前路一段333號 &nbsp;|&nbsp; © 2025 Maison Lumière.</p>
+        </footer>
+      </div>
+
+      <!-- ████ MATERIALS ████ -->
+      <div v-else-if="currentPage==='materials'" key="materials">
+        <div class="page-header">
+          <p class="section-label">Craftsmanship</p>
+          <h1>材質與<em>穿搭效果</em></h1>
+        </div>
+
+        <!-- Intro -->
+        <div class="materials-intro">
+          <img class="materials-intro-img"
+            src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900&q=80"
+            alt="材質介紹" loading="lazy" />
+          <div class="materials-intro-text">
+            <p class="section-label">Our Philosophy</p>
+            <h2 class="section-title">自然之美，<br><em>觸手可及</em></h2>
+            <div class="divider"></div>
+            <p class="section-body">
+              MAISON LUMIÈRE 相信，真正的奢華來自於對材質的尊重。
+              我們只選用經過嚴格認證的天然纖維，確保每一絲觸感
+              都能訴說大自然最真實的語言，並以最舒適的方式貼近您的肌膚。
+            </p>
+          </div>
+        </div>
+
+        <!-- Materials -->
+        <div class="mat-section">
+          <h3 class="mat-section-title">精選天然材質</h3>
+          <div class="mat-grid">
+            <div class="mat-card" v-for="m in materials" :key="m.name">
+              <span class="mat-icon">{{ m.icon }}</span>
+              <h4 class="mat-name">{{ m.name }}</h4>
+              <p class="mat-desc">{{ m.desc }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Style effects -->
+        <div class="mat-section" style="background:var(--warm);margin:0;">
+          <h3 class="mat-section-title">版型穿搭效果</h3>
+          <div class="style-grid">
+            <div class="style-card" v-for="(s, i) in styleEffects" :key="s.name">
+              <div class="style-num">0{{ i+1 }}</div>
+              <h4 class="style-name">{{ s.name }}</h4>
+              <p class="style-desc">{{ s.desc }}</p>
+              <span class="style-tag">{{ s.tag }}</span>
+            </div>
+          </div>
+        </div>
+
+        <footer>
+          <div class="footer-brand">MAISON LUMIÈRE</div>
+          <p>台南市東區府前路一段333號 &nbsp;|&nbsp; © 2025 Maison Lumière.</p>
+        </footer>
+      </div>
+
+      <!-- ████ CONTACT ████ -->
+      <div v-else-if="currentPage==='contact'" key="contact">
+        <div class="contact-wrap">
+          <!-- Info side -->
+          <div class="contact-info">
+            <p class="section-label">Get In Touch</p>
+            <h2>聯絡<em>我們</em></h2>
+            <div class="divider"></div>
+            <p>無論您是尋求個人造型建議、預約試穿，還是洽詢訂製服務，我們的專業團隊隨時恭候。</p>
+            <ul class="info-list">
+              <li class="info-item">
+                <span class="info-icon">📍</span>
+                <div>
+                  <span class="info-label">旗艦店地址</span>
+                  <span class="info-value">台南市東區府前路一段 333 號<br>週二至週日 11:00 — 20:00</span>
+                </div>
+              </li>
+              <li class="info-item">
+                <span class="info-icon">📞</span>
+                <div>
+                  <span class="info-label">電話</span>
+                  <span class="info-value">(06) 234-5678</span>
+                </div>
+              </li>
+              <li class="info-item">
+                <span class="info-icon">✉️</span>
+                <div>
+                  <span class="info-label">電子郵件</span>
+                  <span class="info-value">hello@maisonlumiere.tw</span>
+                </div>
+              </li>
+              <li class="info-item">
+                <span class="info-icon">📸</span>
+                <div>
+                  <span class="info-label">Instagram</span>
+                  <span class="info-value">@maisonlumiere.tw</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Form side -->
+          <div class="contact-form-wrap">
+            <h3 class="form-title">傳送訊息</h3>
+            <p class="form-sub">我們將於 1–2 個工作天內回覆您。</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>姓名</label>
+                <input type="text" v-model="form.name" placeholder="您的姓名" />
+              </div>
+              <div class="form-group">
+                <label>電話</label>
+                <input type="tel" v-model="form.phone" placeholder="0912-345-678" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>電子郵件</label>
+              <input type="email" v-model="form.email" placeholder="your@email.com" />
+            </div>
+            <div class="form-group">
+              <label>洽詢主題</label>
+              <select v-model="form.subject">
+                <option value="">請選擇</option>
+                <option>預約試穿</option>
+                <option>訂製服務</option>
+                <option>物品詢問</option>
+                <option>其他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>訊息內容</label>
+              <textarea v-model="form.message" placeholder="請描述您的需求..."></textarea>
+            </div>
+            <button class="btn-submit" @click="submitForm">送出訊息</button>
+            <div class="success-msg" :class="{ show: formSent }">
+              ✓ 感謝您的來信！我們已收到您的訊息，將盡快與您聯繫。
+            </div>
+
+            <div class="map-placeholder">台南市東區府前路一段 333 號</div>
+          </div>
+        </div>
+
+        <footer>
+          <div class="footer-brand">MAISON LUMIÈRE</div>
+          <p>台南市東區府前路一段333號 &nbsp;|&nbsp; <a href="tel:+886623456789">(06) 234-5678</a>
+          &nbsp;|&nbsp; <a href="mailto:hello@maisonlumiere.tw">hello@maisonlumiere.tw</a><br>
+          © 2025 Maison Lumière. All rights reserved.</p>
+        </footer>
+      </div>
+
+    </transition>
+  </main>
+
+  <!-- RESERVATION MODAL -->
+  <div class="modal-overlay" v-if="showModal" @click.self="showModal=false">
+    <div class="modal-box">
+      <button class="modal-close" @click="showModal=false">✕</button>
+      <p class="section-label" style="margin-bottom:.8rem;">Private Appointment</p>
+      <h3 style="font-family:var(--ff-serif);font-size:1.8rem;font-weight:300;color:var(--espresso);margin-bottom:1.6rem;">預約私人鑑賞</h3>
+      <div class="form-group">
+        <label>姓名</label>
+        <input type="text" v-model="reserve.name" placeholder="您的姓名" />
+      </div>
+      <div class="form-group">
+        <label>電話</label>
+        <input type="tel" v-model="reserve.phone" placeholder="0912-345-678" />
+      </div>
+      <div class="form-group">
+        <label>希望預約日期</label>
+        <input type="date" v-model="reserve.date" />
+      </div>
+      <button class="btn-submit" @click="submitReserve">確認預約</button>
+      <div class="success-msg" :class="{ show: reserveSent }" style="margin-top:.8rem;">
+        ✓ 預約成功！我們將盡快以電話確認您的時段。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed } = Vue;
+
+createApp({
+  setup() {
+    const currentPage = ref('home');
+    const menuOpen    = ref(false);
+    const showModal   = ref(false);
+    const formSent    = ref(false);
+    const reserveSent = ref(false);
+    const activeFilter = ref('全部');
+
+    const navItems = [
+      { id: 'home',      label: '首頁' },
+      { id: 'products',  label: '物品介紹' },
+      { id: 'materials', label: '材質' },
+      { id: 'contact',   label: '聯絡我們' },
+    ];
+
+    function goPage(id) {
+      currentPage.value = id;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Products ──────────────────────────────
+    const filters = ['全部', '戒指', '項鍊', '服裝'];
+
+    const allProducts = [
+      {
+        id:1, cat:'戒指', name:'月影銀環',
+        desc:'以925純銀精鑄，弧面拋光搭配細緻刻紋，散發冷冽月光般的獨特光澤。',
+        price:8800, tag:'新品', img:'https://images.unsplash.com/photo-1603974372039-adc49044b6bd?w=600&q=80'
+      },
+      {
+        id:2, cat:'戒指', name:'黃銅流線戒',
+        desc:'冷熱鍛造黃銅，流線有機造型，戴上即成手指上的雕塑。',
+        price:5600, tag:null, img:'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80'
+      },
+      {
+        id:3, cat:'項鍊', name:'極簡金鎖骨鏈',
+        desc:'K金細鍊搭配幾何墜飾，日常穿搭的精緻點綴，輕盈不負擔。',
+        price:12400, tag:'暢銷', img:'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=600&q=80'
+      },
+      {
+        id:4, cat:'項鍊', name:'珍珠不規則串鍊',
+        desc:'天然淡水珍珠與海水貝殼珠交錯串接，呈現有機自然的層次美感。',
+        price:9200, tag:null, img:'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=600&q=80'
+      },
+      {
+        id:5, cat:'服裝', name:'亞麻收腰長洋裝',
+        desc:'100% 歐洲亞麻，垂墜感極佳，腰部立體剪裁完美展現身形比例。',
+        price:18800, tag:'新品', img:'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&q=80'
+      },
+      {
+        id:6, cat:'服裝', name:'羊毛寬版大衣',
+        desc:'義大利美麗諾羊毛，A字廓形設計，寬鬆包覆感兼具保暖與時尚。',
+        price:32000, tag:'限量', img:'https://images.unsplash.com/photo-1548624313-0396c75e4b1a?w=600&q=80'
+      },
+      {
+        id:7, cat:'服裝', name:'有機棉燈芯絨褲',
+        desc:'GOTS 認證有機棉燈芯絨，直筒剪裁修飾腿型，四季皆宜。',
+        price:9600, tag:null, img:'https://images.unsplash.com/photo-1551232864-3f0890e580d9?w=600&q=80'
+      },
+      {
+        id:8, cat:'戒指', name:'氧化銀堆疊組合',
+        desc:'三枚一組的氧化銀戒，細寬粗細各異，任意堆疊出個人風格。',
+        price:7200, tag:'組合優惠', img:'https://images.unsplash.com/photo-1589128777073-263566ae5e4d?w=600&q=80'
+      },
+    ];
+
+    const filteredProducts = computed(() =>
+      activeFilter.value === '全部'
+        ? allProducts
+        : allProducts.filter(p => p.cat === activeFilter.value)
+    );
+
+    const featuredProducts = allProducts.slice(0, 3).map(p => ({
+      id: p.id, name: p.name, cat: p.cat, img: p.img
+    }));
+
+    // ── Materials ─────────────────────────────
+    const materials = [
+      { icon:'🌾', name:'歐洲亞麻', desc:'夏季首選透氣纖維，越洗越柔軟，歷久彌新，是環保與舒適的最佳典範。' },
+      { icon:'🐑', name:'美麗諾羊毛', desc:'極細纖維不刺膚，天然調溫功能讓您四季皆宜，且具有抗菌除臭特性。' },
+      { icon:'🌿', name:'有機棉花', desc:'GOTS 認證有機棉，從種植到成衣完全無農藥，對肌膚友善，對地球負責。' },
+      { icon:'🥈', name:'925純銀', desc:'高純度銀材搭配特殊工法，抗氧化處理延長光澤，展現細膩的工藝質感。' },
+      { icon:'🔩', name:'黃銅', desc:'冷熱鍛造黃銅擁有獨特的暖金色調，隨時間氧化形成專屬包漿，記錄每段故事。' },
+    ];
+
+    const styleEffects = [
+      {
+        name:'收腰剪裁',
+        desc:'通過腰線的精準收束，強調自然腰身曲線，拉長上下半身比例，呈現小蠻腰的優雅輪廓。',
+        tag:'顯瘦效果★★★★★'
+      },
+      {
+        name:'縮小身形',
+        desc:'深色系搭配垂直線條設計，視覺上收攏整體輪廓，讓身形顯得更為精緻纖細。',
+        tag:'修身效果★★★★☆'
+      },
+      {
+        name:'寬鬆廓形',
+        desc:'A字或H型寬鬆設計包容各種身材，著重舒適與氣場並存，是大衣與外套的主流廓形。',
+        tag:'包覆舒適★★★★★'
+      },
+      {
+        name:'斜肩不對稱',
+        desc:'打破視覺平衡的斜肩線條，自然引導視線，為整體造型增添藝術感與個性。',
+        tag:'視覺焦點★★★★☆'
+      },
+      {
+        name:'拼接分割',
+        desc:'利用布料拼接在腰側、胸線等部位，透過深淺色彩對比製造立體感，達到視覺塑形效果。',
+        tag:'立體塑形★★★★☆'
+      },
+      {
+        name:'蓬袖設計',
+        desc:'泡泡袖或羊腿袖在手臂製造份量感，同時平衡寬臀身形，展現復古浪漫的法式氣息。',
+        tag:'復古浪漫★★★★★'
+      },
+    ];
+
+    // ── Form ──────────────────────────────────
+    const form = ref({ name:'', phone:'', email:'', subject:'', message:'' });
+    const reserve = ref({ name:'', phone:'', date:'' });
+
+    function submitForm() {
+      formSent.value = true;
+      form.value = { name:'', phone:'', email:'', subject:'', message:'' };
+      setTimeout(() => { formSent.value = false; }, 5000);
+    }
+
+    function submitReserve() {
+      reserveSent.value = true;
+      reserve.value = { name:'', phone:'', date:'' };
+      setTimeout(() => { reserveSent.value = false; showModal.value = false; }, 3000);
+    }
+
+    return {
+      currentPage, menuOpen, showModal,
+      formSent, reserveSent,
+      navItems, goPage,
+      filters, activeFilter, filteredProducts, featuredProducts, allProducts,
+      materials, styleEffects,
+      form, reserve, submitForm, submitReserve
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
